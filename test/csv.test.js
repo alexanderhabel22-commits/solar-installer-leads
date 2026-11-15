@@ -38,3 +38,17 @@ test('maxColumns with chunk splits', () => {
         assert.deepEqual(rows, expected, `cut at ${cut}`);
     }
 });
+
+test('early check drops unwanted rows, also across chunk splits', () => {
+    const text = 'id,date,name,extra\n1,2019-01-01,"old, ""row""",x\n2,2025-01-01,new,"y\nz"\n3,2024-05-05,mid,w\n';
+    const expected = [['id', 'date', 'name', 'extra'], ['2', '2025-01-01', 'new', 'y\nz'], ['3', '2024-05-05', 'mid', 'w']];
+    for (let cut = 1; cut < text.length; cut++) {
+        const rows = [];
+        const opts = { earlyColumns: 2, keepRow: (f) => f[0] === 'id' || f[1] >= '2024-01-01' };
+        const p = createCsvParser((r) => rows.push(r), opts);
+        p.feed(text.slice(0, cut));
+        p.feed(text.slice(cut));
+        p.end();
+        assert.deepEqual(rows, expected, `cut at ${cut}`);
+    }
+});

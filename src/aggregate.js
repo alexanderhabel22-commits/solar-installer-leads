@@ -106,7 +106,6 @@ function newTally(source) {
         batteries: new Counter(),
         counties: new Counter(),
         cities: new Counter(),
-        zips: new Counter(),
         states: new Counter(),
         years: new Counter(),
         first: null,
@@ -120,6 +119,18 @@ const cleanBrand = (v) => {
     if (!s || /^(none|n\/?a|other|unknown|0)$/i.test(s)) return null;
     return s.replace(/\s+/g, ' ');
 };
+
+const placeCache = new Map();
+/** "SAN DIEGO", "CA" -> "San Diego|CA" (cached: the same few thousand places repeat). */
+function placeKey(name, state) {
+    const raw = `${name}|${state}`;
+    let v = placeCache.get(raw);
+    if (v === undefined) {
+        v = `${prettyName(String(name).trim())}|${state}`;
+        if (placeCache.size < 200_000) placeCache.set(raw, v);
+    }
+    return v;
+}
 
 /** Adds one install record to a tally. */
 export function addToTally(t, rec) {
@@ -163,10 +174,8 @@ export function addToTally(t, rec) {
     t.modules.add(cleanBrand(rec.module));
     t.inverters.add(cleanBrand(rec.inverter));
     t.batteries.add(cleanBrand(rec.battery));
-    if (rec.county) t.counties.add(`${prettyName(String(rec.county).trim())}|${rec.state}`);
-    if (rec.city) t.cities.add(`${prettyName(String(rec.city).trim())}|${rec.state}`);
-    const z = zip5(rec.zip);
-    if (z) t.zips.add(z);
+    if (rec.county) t.counties.add(placeKey(rec.county, rec.state));
+    if (rec.city) t.cities.add(placeKey(rec.city, rec.state));
     t.states.add(rec.state);
     const year = rec.date ? Number(rec.date.slice(0, 4)) : rec.year;
     if (year) t.years.add(String(year));
@@ -177,7 +186,7 @@ export function addToTally(t, rec) {
 }
 
 function mergeTally(into, from) {
-    for (const k of ['sources', 'names', 'phones', 'hq', 'licenses', 'financiers', 'modules', 'inverters', 'batteries', 'counties', 'cities', 'zips', 'states', 'years']) {
+    for (const k of ['sources', 'names', 'phones', 'hq', 'licenses', 'financiers', 'modules', 'inverters', 'batteries', 'counties', 'cities', 'states', 'years']) {
         into[k].mergeFrom(from[k]);
     }
     for (const [k, v] of from.sourceUrls) into.sourceUrls.set(k, v);
@@ -192,6 +201,7 @@ function mergeTally(into, from) {
 export class Tally {
     constructor() {
         this.map = new Map();
+        this.keys = new Map();
         this.skipped = { self_install: 0, junk_name: 0 };
     }
 
@@ -200,11 +210,12 @@ export class Tally {
             this.skipped.self_install++;
             return;
         }
-        if (isJunkInstaller(rec.installer)) {
-            this.skipped.junk_name++;
-            return;
+        // Names repeat millions of times in California, so keys are cached.
+        let key = this.keys.get(rec.installer);
+        if (key === undefined) {
+            key = isJunkInstaller(rec.installer) ? '' : installerKey(rec.installer);
+            this.keys.set(rec.installer, key);
         }
-        const key = installerKey(rec.installer);
         if (!key) {
             this.skipped.junk_name++;
             return;

@@ -9,8 +9,14 @@
 /**
  * Returns a push-style parser. Call feed(chunk) with text chunks and end()
  * at the end. onRow(fields) gets an array with at most maxColumns strings.
+ *
+ * Optional early check: once a row has `opts.earlyColumns` fields,
+ * `opts.keepRow(fields)` is called; when it returns false the rest of the
+ * row is skipped without parsing and onRow is not called. Both are read
+ * live, so they can be set after the header row is seen.
  */
-export function createCsvParser(onRow, { maxColumns = Infinity } = {}) {
+export function createCsvParser(onRow, opts = {}) {
+    const maxColumns = opts.maxColumns ?? Infinity;
     let rest = '';
 
     // Parses complete rows out of `text`. Returns the index where an
@@ -77,8 +83,15 @@ export function createCsvParser(onRow, { maxColumns = Infinity } = {}) {
                 const c = text.charCodeAt(i);
                 if (c === 44) {
                     i++;
-                    // Past the columns we need: skip quickly to the end of the row.
-                    if (fields.length >= maxColumns) {
+                    let skip = fields.length >= maxColumns;
+                    let drop = false;
+                    if (!skip && fields.length === opts.earlyColumns && opts.keepRow && !opts.keepRow(fields)) {
+                        skip = true;
+                        drop = true;
+                    }
+                    // Past the columns we need (or a row we don't want): skip to the end of the row.
+                    if (skip) {
+                        if (drop) fields.dropped = true;
                         const end = skipToRowEnd(text, i);
                         if (end === -1) {
                             if (!final) return rowStart;
@@ -95,7 +108,7 @@ export function createCsvParser(onRow, { maxColumns = Infinity } = {}) {
             // Consume the line break.
             if (i < n && text.charCodeAt(i) === 13) i++;
             if (i < n && text.charCodeAt(i) === 10) i++;
-            if (fields.length > 1 || fields[0] !== '') onRow(fields);
+            if (!fields.dropped && (fields.length > 1 || fields[0] !== '')) onRow(fields);
         }
         return n;
     }
