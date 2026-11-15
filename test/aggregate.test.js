@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { installerKey, isJunkInstaller, tradingName, Tally, mergeTallies, toProfile } from '../src/aggregate.js';
+import { cleanName, installerKey, isJunkInstaller, tradingName, Tally, mergeTallies, toProfile } from '../src/aggregate.js';
 
 const rec = (o) => ({ source: 'ca_dgstats', status: 'installed', state: 'CA', solar: true, storage: false, ...o });
 
@@ -11,6 +11,9 @@ test('installer keys group spellings and national brands', () => {
     assert.equal(installerKey('California Solar Electric'), 'california solar electric'); // state at the start stays
     assert.equal(installerKey('Solar New York'), 'solar new york'); // too short to cut
     assert.equal(installerKey('J2RM Professional Solutions Inc DBA Freedom Solar'), 'freedom solar');
+    assert.equal(installerKey('G A F Energy LLC'), installerKey('GAF Energy'));
+    assert.equal(installerKey('N R G Clean Power Inc'), 'nrg clean power');
+    assert.equal(cleanName('SOLAR OPTIMUM DESIGN &amp; ELECTRICAL'), 'SOLAR OPTIMUM DESIGN & ELECTRICAL');
 });
 
 test('junk installer names', () => {
