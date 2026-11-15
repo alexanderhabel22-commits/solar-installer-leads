@@ -136,7 +136,8 @@
                 "Most recent install",
                 "Projects in the pipeline (NY, CT)"
             ],
-            "default": "installs"
+            "default": "installs",
+            "description": "How to order the companies. The top-ranked ones are returned first."
         },
         "maxResults": {
             "title": "Maximum results",
