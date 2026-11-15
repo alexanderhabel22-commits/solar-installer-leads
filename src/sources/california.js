@@ -167,11 +167,11 @@ function listEntries(zip) {
     });
 }
 
-function readEntryRows(zip, entry, onRow) {
+function readEntryRows(zip, entry, onRow, csvOpts) {
     return new Promise((resolve, reject) => {
         zip.openReadStream(entry, (err, stream) => {
             if (err) return reject(err);
-            const parser = createCsvParser(onRow, { maxColumns: 90 });
+            const parser = createCsvParser(onRow, csvOpts);
             stream.setEncoding('utf8');
             stream.on('data', (c) => parser.feed(c));
             stream.on('end', () => {
@@ -230,9 +230,16 @@ export async function loadCalifornia({ from, to, log, shouldStop, zipPath }, onI
                 if (shouldStop?.()) break;
                 log?.info?.(`California: reading ${entry.fileName}`);
                 let at = null;
+                // Rows outside the date range are dropped as soon as the date
+                // column is read, without parsing the remaining columns.
+                const inRange = (d) => Boolean(d) && d >= from && (!to || d <= to);
+                const csvOpts = { maxColumns: 90 };
                 await readEntryRows(zip, entry, (f) => {
                     if (!at) {
-                        at = columnIndex(f.map((h) => h.replace(/^﻿/, '').trim()));
+                        at = columnIndex(f.map((h) => h.replace(/^\uFEFF/, '').trim()));
+                        csvOpts.earlyColumns = at.approved + 1;
+                        csvOpts.keepRow = (fields) => inRange(fields[at.approved]);
+                        csvOpts.maxColumns = Math.max(...Object.values(at)) + 1;
                         return;
                     }
                     const date = f[at.approved];
@@ -241,7 +248,7 @@ export async function loadCalifornia({ from, to, log, shouldStop, zipPath }, onI
                     rows++;
                     if (!latest || date > latest) latest = date;
                     onInstall(mapCaRow(f, at));
-                });
+                }, csvOpts);
             }
         } finally {
             zip.close();
