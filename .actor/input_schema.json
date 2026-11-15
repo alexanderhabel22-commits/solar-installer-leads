@@ -1,0 +1,151 @@
+{
+    "title": "Rank US solar and battery installers by real installs",
+    "description": "Pick states, a county list or a ZIP radius, and a date range. The Actor reads every solar and battery installation recorded in public state program and utility interconnection data, then returns one row per installer company ranked by how many systems it actually installed there.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "states": {
+            "title": "States",
+            "type": "array",
+            "description": "States to cover. Leave empty for all five supported states. Install-level public data exists for California (all PG&E, SCE and SDG&E customers), New York, Massachusetts, Connecticut and Oregon.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "CA",
+                    "NY",
+                    "MA",
+                    "CT",
+                    "OR"
+                ],
+                "enumTitles": [
+                    "California",
+                    "New York",
+                    "Massachusetts",
+                    "Connecticut",
+                    "Oregon"
+                ]
+            },
+            "prefill": [
+                "CA",
+                "NY",
+                "MA",
+                "CT",
+                "OR"
+            ],
+            "default": []
+        },
+        "counties": {
+            "title": "Counties (optional)",
+            "type": "array",
+            "description": "Only count installs in these counties, e.g. San Diego, Los Angeles, Suffolk. Leave empty for whole states. Oregon data has no county; use a ZIP radius there.",
+            "editor": "stringList"
+        },
+        "zipCode": {
+            "title": "ZIP code (optional)",
+            "type": "string",
+            "description": "Only count installs within the radius of this 5-digit ZIP code. Works across state lines.",
+            "editor": "textfield"
+        },
+        "radiusMiles": {
+            "title": "Radius in miles",
+            "type": "integer",
+            "description": "Used with the ZIP code.",
+            "default": 25,
+            "minimum": 1,
+            "maximum": 300
+        },
+        "installedFrom": {
+            "title": "Installed on or after",
+            "type": "string",
+            "description": "Only count systems installed (California: interconnection approved) on or after this date, YYYY-MM-DD. Later dates make the ranking show who is active now.",
+            "editor": "datepicker",
+            "prefill": "2024-01-01",
+            "default": "2024-01-01"
+        },
+        "installedTo": {
+            "title": "Installed on or before (optional)",
+            "type": "string",
+            "description": "Leave empty for everything up to the latest data.",
+            "editor": "datepicker"
+        },
+        "sectors": {
+            "title": "Customer sector",
+            "type": "array",
+            "description": "Leave empty for both.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "residential",
+                    "commercial"
+                ],
+                "enumTitles": [
+                    "Residential (homes)",
+                    "Commercial, government and other non-residential"
+                ]
+            }
+        },
+        "technology": {
+            "title": "Technology",
+            "type": "string",
+            "description": "Count every install, or only solar, only batteries, or only solar paired with a battery.",
+            "editor": "select",
+            "enum": [
+                "any",
+                "solar",
+                "storage",
+                "solar_and_storage"
+            ],
+            "enumTitles": [
+                "Solar or battery",
+                "Solar",
+                "Battery storage",
+                "Solar + battery together"
+            ],
+            "default": "any"
+        },
+        "minInstalls": {
+            "title": "Minimum installs",
+            "type": "integer",
+            "description": "Skip companies with fewer installs than this in your area and dates.",
+            "default": 5,
+            "minimum": 1
+        },
+        "requirePhone": {
+            "title": "Only companies with a phone number",
+            "type": "boolean",
+            "description": "Phone numbers come from the California data, so this keeps mostly companies that install in California.",
+            "default": false
+        },
+        "sortBy": {
+            "title": "Rank by",
+            "type": "string",
+            "editor": "select",
+            "enum": [
+                "installs",
+                "total_kw_dc",
+                "storage_installs",
+                "last_install_date",
+                "pipeline_projects"
+            ],
+            "enumTitles": [
+                "Number of installs",
+                "Total solar capacity (kW)",
+                "Battery installs",
+                "Most recent install",
+                "Projects in the pipeline (NY, CT)"
+            ],
+            "default": "installs"
+        },
+        "maxResults": {
+            "title": "Maximum results",
+            "type": "integer",
+            "description": "The most installer companies to return (and be charged for). The top-ranked ones come first.",
+            "prefill": 100,
+            "default": 100,
+            "minimum": 1,
+            "maximum": 100000
+        }
+    }
+}
