@@ -1,0 +1,18 @@
+{
+  "name": "solar-installer-leads",
+  "version": "0.1.0",
+  "description": "US solar and battery installers ranked by real installation volume from public state program and utility interconnection data.",
+  "type": "module",
+  "main": "src/main.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "apify": "^3.7.2",
+    "yauzl": "^3.4.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,117 @@
+{
+    "actorSpecification": 1,
+    "fields": {},
+    "views": {
+        "overview": {
+            "title": "Ranked installers",
+            "transformation": {
+                "fields": [
+                    "rank",
+                    "installer_name",
+                    "installs",
+                    "storage_installs",
+                    "share_of_area_installs",
+                    "total_kw_dc",
+                    "last_install_date",
+                    "phone",
+                    "hq_city",
+                    "hq_state",
+                    "states"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "rank": {
+                        "label": "Rank",
+                        "format": "number"
+                    },
+                    "installer_name": {
+                        "label": "Installer",
+                        "format": "text"
+                    },
+                    "installs": {
+                        "label": "Installs",
+                        "format": "number"
+                    },
+                    "storage_installs": {
+                        "label": "With battery",
+                        "format": "number"
+                    },
+                    "share_of_area_installs": {
+                        "label": "Market share",
+                        "format": "number"
+                    },
+                    "total_kw_dc": {
+                        "label": "Total kW",
+                        "format": "number"
+                    },
+                    "last_install_date": {
+                        "label": "Last install",
+                        "format": "text"
+                    },
+                    "phone": {
+                        "label": "Phone",
+                        "format": "text"
+                    },
+                    "hq_city": {
+                        "label": "HQ city",
+                        "format": "text"
+                    },
+                    "hq_state": {
+                        "label": "HQ state",
+                        "format": "text"
+                    },
+                    "states": {
+                        "label": "Active in",
+                        "format": "array"
+                    }
+                }
+            }
+        },
+        "full": {
+            "title": "Full details",
+            "transformation": {
+                "fields": [
+                    "rank",
+                    "installer_name",
+                    "other_names",
+                    "share_of_area_installs",
+                    "installs",
+                    "solar_installs",
+                    "storage_installs",
+                    "storage_share",
+                    "pipeline_projects",
+                    "total_kw_dc",
+                    "avg_system_kw",
+                    "total_storage_kwh",
+                    "residential_share",
+                    "commercial_installs",
+                    "third_party_owned_share",
+                    "top_financiers",
+                    "avg_cost_per_watt",
+                    "first_install_date",
+                    "last_install_date",
+                    "installs_by_year",
+                    "states",
+                    "top_counties",
+                    "top_cities",
+                    "top_module_brands",
+                    "top_inverter_brands",
+                    "top_battery_brands",
+                    "phone",
+                    "hq_city",
+                    "hq_state",
+                    "hq_zip",
+                    "cslb_license",
+                    "cslb_license_url",
+                    "sources",
+                    "scraped_at"
+                ]
+            },
+            "display": {
+                "component": "table"
+            }
+        }
+    }
+}
