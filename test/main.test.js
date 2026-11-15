@@ -87,3 +87,23 @@ test('rank by other fields', () => {
     assert.deepEqual(rows.map((r) => [r.installer_name, r.rank]), [['A', 1], ['B', 2]]);
     assert.equal(rank(rows, 'last_install_date')[0].installer_name, 'B');
 });
+
+test('ZIP radius: installs without a ZIP are placed by the main county', async () => {
+    const input = parseInput({ zipCode: '92101', radiusMiles: 10, minInstalls: 1 });
+    const recs = [
+        { installer: 'Acme Solar', zip: '92103', county: 'SAN DIEGO' },
+        { installer: 'Acme Solar', zip: '92104', county: 'SAN DIEGO' },
+        { installer: 'Acme Solar', zip: null, county: 'SAN DIEGO', storage: true },
+        { installer: 'Far Away Solar', zip: null, county: 'ALAMEDA', storage: true },
+        { installer: 'Far Away Solar', zip: '94501', county: 'ALAMEDA' },
+    ].map((r) => ({ source: 'ca_dgstats', status: 'installed', state: 'CA', solar: !r.storage, storage: false, date: '2025-01-01', ...r }));
+    const { rows, areaInstalls } = await collect(input, {
+        log: quiet,
+        deadline: null,
+        loaders: { CA: async (o, cb) => { recs.forEach(cb); return { rows: recs.length }; } },
+    });
+    assert.equal(areaInstalls, 3);
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].installs, 3);
+    assert.equal(rows[0].storage_installs, 1);
+});

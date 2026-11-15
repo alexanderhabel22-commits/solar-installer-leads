@@ -106,8 +106,11 @@ export function parseInput(raw = {}) {
     };
 }
 
-/** Install-level filter for an input: rec => boolean. */
-export function installFilter(input) {
+/**
+ * Install-level filter for an input: rec => boolean. With ignoreZip, records
+ * that have no ZIP pass the radius test (the caller places them by county).
+ */
+export function installFilter(input, opts = {}) {
     const states = new Set(input.states);
     const counties = new Set(input.counties);
     const centre = input.zipCode ? zipCentroid(input.zipCode) : null;
@@ -127,7 +130,7 @@ export function installFilter(input) {
     return (rec) => {
         if (!states.has(rec.state)) return false;
         if (counties.size && !counties.has(countyKey(rec.county))) return false;
-        if (centre && !nearZip(rec.zip)) return false;
+        if (centre && !(opts.ignoreZip && !zip5(rec.zip)) && !nearZip(rec.zip)) return false;
         if (sectors.size && !(rec.sector && sectors.has(rec.sector))) return false;
         if (input.technology === 'solar' && !rec.solar) return false;
         if (input.technology === 'storage' && !rec.storage) return false;
@@ -166,10 +169,30 @@ export async function collect(input, { log: logger = log, deadline = runDeadline
     const stats = {};
     let areaInstalls = 0;
 
-    const onInstall = (rec) => {
-        if (!keep(rec)) return;
+    // Some utilities hide the ZIP code of battery systems and publish only the
+    // county. For a ZIP-radius search those records wait until the end, and
+    // count when their county holds at least a quarter of the radius's
+    // ZIP-located installs.
+    const keepNoZip = input.zipCode ? installFilter(input, { ignoreZip: true }) : null;
+    const deferred = [];
+    const radiusCounties = new Map();
+    let radiusLocated = 0;
+    const accept = (rec) => {
         if (rec.status !== 'pipeline' && !rec.self_install) areaInstalls++;
         tally.add(rec);
+    };
+    const onInstall = (rec) => {
+        if (keepNoZip && !zip5(rec.zip)) {
+            if (rec.county && keepNoZip(rec)) deferred.push(rec);
+            return;
+        }
+        if (!keep(rec)) return;
+        if (keepNoZip && rec.county) {
+            const k = `${countyKey(rec.county)}|${rec.state}`;
+            radiusCounties.set(k, (radiusCounties.get(k) ?? 0) + 1);
+            radiusLocated++;
+        }
+        accept(rec);
     };
 
     // California is a big download, so run it alongside the small sources.
@@ -195,6 +218,17 @@ export async function collect(input, { log: logger = log, deadline = runDeadline
         s.seconds = Math.round((Date.now() - t0) / 100) / 10;
         logger.info(`${src.label}: ${s.rows_in_range} install records in range (${s.seconds}s)`);
     }));
+    if (deferred.length) {
+        const main = new Set([...radiusCounties].filter(([, n]) => n >= radiusLocated * 0.25).map(([k]) => k));
+        let placed = 0;
+        for (const rec of deferred) {
+            if (main.has(`${countyKey(rec.county)}|${rec.state}`)) {
+                accept(rec);
+                placed++;
+            }
+        }
+        logger.info(`${placed} of ${deferred.length} installs without a ZIP code were placed by county (${[...main].join(', ') || 'none'})`);
+    }
     if (outOfTime()) logger.warning('The run ran out of time while reading data; results may be incomplete. Raise the run timeout to get everything.');
 
     const groups = mergeTallies(tally.tallies);

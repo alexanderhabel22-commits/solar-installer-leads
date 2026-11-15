@@ -20,7 +20,7 @@ Directory scrapers tell you who *says* they install solar. This tells you who *d
 
 *(Illustrative rows.)* Each row also has: other spellings of the company name, solar-only and battery installs, projects still in the pipeline (New York and Connecticut), average system size, total battery kWh, residential share, commercial jobs, share of jobs that are leased or on a PPA, top third-party owners, average price per watt, first and last install date, installs per year, every state the company is active in, top counties and cities, top panel, inverter and battery brands, headquarters city, state and ZIP, California CSLB license number with a link to the license page, and the public records each number came from.
 
-Typical results for installs since January 2024: all five states give about 485,000 installs from about 2,100 companies with 5 or more jobs; San Diego County alone (2025 onward) gives about 41,000 installs from 300 companies. A full five-state run takes about a minute.
+Typical results for installs since January 2024: all five states give about 485,000 installs from about 2,100 companies with 5 or more jobs; San Diego County alone (2025 onward) gives about 41,000 installs from 300 companies. A full five-state run takes about a minute and a half.
 
 ## Where the data comes from
 
@@ -41,7 +41,7 @@ Companies that install in several states are merged into one row (same name, sam
 ## Input
 
 - **States**: any of California, New York, Massachusetts, Connecticut and Oregon. Leave empty for all five.
-- **Counties** (optional), e.g. `San Diego`, `Suffolk`, or a **ZIP code and radius** in miles. Only installs inside the area count, so the ranking and market share are for that area.
+- **Counties** (optional), e.g. `San Diego`, `Suffolk`, or a **ZIP code and radius** in miles. Only installs inside the area count, so the ranking and market share are for that area. (Some California utilities publish only the county for battery systems, not the ZIP code. In a ZIP-radius search those batteries count when their county is the main county of your radius.)
 - **Installed on or after / before**: the date range. The default, January 2024 onward, shows who is active now.
 - **Customer sector**: residential, commercial, or both.
 - **Technology**: everything, solar only, batteries only, or solar plus battery together.
