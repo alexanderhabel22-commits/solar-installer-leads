@@ -42,7 +42,9 @@ export function installerKey(name) {
     for (const [re, key] of ALIASES) if (re.test(raw)) return key;
     // "Foo Solar LLC dba Bar Energy": the trading name is what people know.
     const dba = raw.split(/\s+(?:d\/?b\/?a|doing business as)\s+/i);
-    let key = nameKey(dba.length > 1 && dba[1].trim() ? dba[1] : raw);
+    let key = nameKey(dba.length > 1 && dba[1].trim() ? dba[1] : raw)
+        // "G A F Energy" -> "gaf energy", "N R G Clean Power" -> "nrg clean power".
+        .replace(/\b([a-z0-9])(?: ([a-z0-9]))+\b/g, (m) => m.replace(/ /g, ''));
     for (const st of STATE_WORDS) {
         const re = new RegExp(`\\s+(?:of\\s+)?${st}$`);
         if (re.test(key)) {
@@ -132,11 +134,17 @@ function placeKey(name, state) {
     return v;
 }
 
+const ENTITIES = { '&amp;': '&', '&quot;': '"', '&#39;': "'", '&apos;': "'", '&lt;': '<', '&gt;': '>' };
+/** Tidies a raw installer name: HTML entities some utilities leave in, extra spaces. */
+export function cleanName(v) {
+    return String(v ?? '').replace(/&(amp|quot|#39|apos|lt|gt);/g, (m) => ENTITIES[m]).trim().replace(/\s+/g, ' ');
+}
+
 /** Adds one install record to a tally. */
 export function addToTally(t, rec) {
     t.sources.add(rec.source);
     if (rec.url) t.sourceUrls.set(rec.source, rec.url);
-    t.names.add(rec.installer.trim().replace(/\s+/g, ' '));
+    t.names.add(cleanName(rec.installer));
     const pd = phoneDigits(rec.phone);
     if (pd) t.phones.add(pd);
     if (rec.hq_city && rec.hq_state) t.hq.add(`${rec.hq_city.trim()}|${rec.hq_state}|${zip5(rec.hq_zip) ?? ''}`);
@@ -213,7 +221,8 @@ export class Tally {
         // Names repeat millions of times in California, so keys are cached.
         let key = this.keys.get(rec.installer);
         if (key === undefined) {
-            key = isJunkInstaller(rec.installer) ? '' : installerKey(rec.installer);
+            const name = cleanName(rec.installer);
+            key = isJunkInstaller(name) ? '' : installerKey(name);
             this.keys.set(rec.installer, key);
         }
         if (!key) {
@@ -317,8 +326,10 @@ export function tradingName(name) {
 
 /** Picks a display name: the most common spelling, tidied. */
 export function displayName(names) {
-    const top = names.top(10);
-    if (!top.length) return null;
+    const spaced = /\b[A-Za-z] [A-Za-z]\b/; // "G A F Energy"
+    const all = names.top(10);
+    if (!all.length) return null;
+    const top = all.filter(([n]) => !spaced.test(n)).length ? all.filter(([n]) => !spaced.test(n)) : all;
     // Prefer a mixed-case spelling when it is nearly as common as an all-caps one.
     const best = top[0][0];
     const mixed = top.find(([n, c]) => n !== n.toUpperCase() && c >= top[0][1] * 0.5);
