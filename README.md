@@ -13,12 +13,17 @@ Directory scrapers tell you who *says* they install solar. This tells you who *d
 
 ## What you get
 
-| rank | installer_name | installs | storage_installs | share_of_area_installs | total_kw_dc | last_install_date | phone | hq_city |
-|---|---|---|---|---|---|---|---|---|
-| 1 | Example Solar Inc | 2,917 | 1,541 | 0.071 | 21,400 | 2026-08-29 | (760) 555-0100 | Escondido |
-| 2 | Example Home Energy | 2,465 | 1,176 | 0.060 | 17,900 | 2026-08-30 | (619) 555-0142 | San Diego |
+The input form comes pre-filled with **all five states, installs since January 2024, top 100 installers**. Click Start and you get the ranking in about 40 seconds, for about $0.41. These rows are from a test run on November 23, 2026:
 
-*(Illustrative rows.)* Each row also has: other spellings of the company name, solar-only and battery installs, projects still in the pipeline (New York and Connecticut), average system size, total battery kWh, residential share, commercial jobs, share of jobs that are leased or on a PPA, top third-party owners, average price per watt, first and last install date, installs per year, every state the company is active in, top counties and cities, top panel, inverter and battery brands, headquarters city, state and ZIP, California CSLB license number with a link to the license page, and the public records each number came from.
+| Rank | Installer | Installs | With battery | Share of area | Top counties | Last install |
+|---|---|---|---|---|---|---|
+| 1 | Sunrun | 114,711 | 74% | 23.1% | San Diego, Riverside, Los Angeles | 2026-09-30 |
+| 2 | Tesla Energy (SolarCity) | 23,677 | 87% | 4.8% | Santa Clara, San Diego, Los Angeles | 2026-10-26 |
+| 3 | Sunpower Corporation Systems | 20,833 | 18% | 4.2% | Riverside, San Bernardino, San Diego | 2026-09-30 |
+| 4 | Bright Ops | 20,815 | 81% | 4.2% | San Diego, San Bernardino, Riverside | 2026-09-30 |
+| 5 | Citadel Roofing And Solar | 12,346 | 24% | 2.5% | Fresno, Contra Costa, Kern | 2026-09-30 |
+
+Each row also has: other spellings of the company name, solar-only and battery installs, projects still in the pipeline (New York and Connecticut), average system size, total battery kWh, residential share, commercial jobs, share of jobs that are leased or on a PPA, top third-party owners, average price per watt, first and last install date, installs per year, every state the company is active in, top counties and cities, top panel, inverter and battery brands, headquarters city, state and ZIP, California CSLB license number with a link to the license page, and the public records each number came from.
 
 Typical results for installs since January 2024: all five states give about 485,000 installs from about 2,100 companies with 5 or more jobs; San Diego County alone (2025 onward) gives about 41,000 installs from 300 companies. A full five-state run takes about a minute and a half.
 
@@ -47,9 +52,17 @@ Companies that install in several states are merged into one row (same name, sam
 - **Technology**: everything, solar only, batteries only, or solar plus battery together.
 - **Minimum installs**, **only companies with a phone number**, **rank by** (installs, kW, battery installs, most recent install, pipeline) and **maximum results**.
 
-## Pricing
+## How much does it cost?
 
-You pay per installer company returned, plus a small fee per run. Rows come out best-ranked first, so a low maximum still gets you the top companies. You can also set a spending limit on the run.
+**$4 per 1,000 installer companies** ($0.004 each), plus $0.005 per run. You pay only for companies returned.
+
+| You get | You pay |
+|---|---|
+| 100 installers | about $0.41 |
+| 500 installers | about $2.01 |
+| 1,000 installers | about $4.01 |
+
+Rows come out best-ranked first, so a low maximum still gets you the top companies. Apify's free plan includes $5 of credit every month, which covers about 1,200 companies, so you can try it without paying anything. Set **Maximum results** or a spending limit and the run stops there.
 
 ## Data and privacy
 
@@ -60,3 +73,14 @@ Only business information: installer company names and the business phone, city 
 - Run it monthly on a schedule to watch market share move and catch new installers as they appear.
 - Use **Rank by: Most recent install** to find companies that are active this month, or a recent **Installed on or after** date for momentum.
 - For phone numbers outside California, export the list and run it through a contact-enrichment tool; the install counts are the part no other dataset has.
+
+## More B2B lead lists from the same developer
+
+Same pricing, same clean one-row-per-company format:
+
+- [US Manufacturer & Machine Shop Leads](https://apify.com/habes22/fabricator-finder): metal fabricators and machine shops by capability (laser, CNC, welding)
+- [Construction Contractor & Subcontractor Finder](https://apify.com/habes22/construction-contractor-finder): commercial contractors and subs by trade
+- [Trucking Company & Carrier Leads (FMCSA)](https://apify.com/habes22/trucking-carrier-finder): trucking companies by cargo, fleet size and area, with safety data
+- [Medical Practice & Clinic Leads (NPI)](https://apify.com/habes22/medical-practice-leads): dental, medical and therapy practices by specialty
+- [Government Bids & RFPs (SAM.gov + State)](https://apify.com/habes22/gov-bids-finder): open federal, state and local bids for what you sell
+- [Commercial Property Owner Leads](https://apify.com/habes22/commercial-property-owner-leads): who owns offices, warehouses and other commercial buildings
